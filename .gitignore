@@ -1,0 +1,9 @@
+venv/
+__pycache__/
+*.pyc
+.env
+app/services/rag/.cache/
+
+# Vendored BEATs backbone checkpoint (~360MB) -- downloaded on demand by
+# app/services/optional_models.py, never committed.
+app/services/beats_vendor/*.pt

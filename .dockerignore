@@ -1,0 +1,10 @@
+venv/
+__pycache__/
+*.pyc
+.env
+.git/
+.github/
+.pytest_cache/
+app/services/rag/.cache/
+tests/
+README.md

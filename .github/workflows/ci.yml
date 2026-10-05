@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      # Tests never call model_loader.load_all() (they monkeypatch around it), so this
+      # just needs to satisfy Settings' required MODELS_DIR field -- it's never read.
+      MODELS_DIR: /tmp/unused-models-dir
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+      # torch==...+cpu (see requirements.txt) is a PyTorch CPU-only build that's only
+      # published on PyTorch's own index, not PyPI -- plain `pip install -r
+      # requirements.txt` 404s on it without this.
+      - run: pip install -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cpu
+      - run: pip install ruff mypy
+      # Minimal, high-signal ruleset: real bugs (undefined names, unused imports,
+      # syntax errors), not style. Not trying to be a full lint gate.
+      - run: ruff check --select=E9,F .
+      # --ignore-missing-imports: tensorflow/librosa/torch/etc ship no type stubs;
+      # this only checks our own code, not third-party internals.
+      - run: mypy app --ignore-missing-imports
+      - run: pytest
